@@ -247,63 +247,48 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
 
     @Override
     public Object visitFloop(FloopContext ctx) {
-        if (ctx.asig() != null) {
-            visit(ctx.asig());
-        }
+        try {
+            // 1. Inicialización (declaración o asignación)
+            if (ctx.declaracion() != null) {
+                visit(ctx.declaracion());
+            } else if (ctx.asig() != null && ctx.asig().size() > 0) {
+                visit(ctx.asig(0));
+            }
 
-        // 2. Bucle principal
-        while (true) {
-            // 2.1 Verificar condición (si existe)
-            if (ctx.condicion() != null) {
-                Boolean condicion = (Boolean) visit(ctx.condicion());
-                if (condicion != null && !condicion) {
-                    break; // Salir si la condición es falsa
+            // 2. Bucle principal
+            while (true) {
+                // 2.1 Verificar condición
+                if (ctx.condicion() != null) {
+                    Object cond = visit(ctx.condicion());
+                    if (!(cond instanceof Boolean)) {
+                        logError("La condición debe ser booleana");
+                        break;
+                    }
+                    if (!(Boolean) cond) {
+                        break;
+                    }
+                } else if (ctx.declaracion() == null && ctx.asig() == null) {
+                    break; // For infinito sin condición ni inicialización
+                }
+
+                // 2.2 Ejecutar cuerpo
+                for (manbelParser.InstruccionContext instr : ctx.instruccion()) {
+                    visit(instr);
+                }
+
+                // 2.3 Paso de actualización (asignación o expresión)
+                if (ctx.asig() != null && ctx.asig().size() > 1) {
+                    visit(ctx.asig(1));
+                } else if (ctx.expr() != null) {
+                    visit(ctx.expr());
+                } else {
+                    break; // No hay actualización
                 }
             }
-
-            // 2.2 Ejecutar el cuerpo del for
-            for (manbelParser.InstruccionContext instr : ctx.instruccion()) {
-                visit(instr);
-            }
-
-            // 2.3 Ejecutar el incremento (si existe)
-            if (ctx.incremento() != null) {
-                visit(ctx.incremento());
-            }
-
-            // 2.4 Si no hay condición, salir después de una iteración
-            if (ctx.condicion() == null) {
-                break;
-            }
+        } catch (Exception e) {
+            logError("Error en ciclo for: " + e.getMessage());
         }
-
         return null;
-    }
-
-    private void executeForInitialization(manbelParser.FloopContext ctx) {
-        if (ctx.asig() != null) {
-            visit(ctx.asig());
-        }
-    }
-
-    private boolean shouldContinueForLoop(manbelParser.FloopContext ctx) {
-        if (ctx.condicion() == null) {
-            return false; // No hay condición, se ejecuta solo una vez
-        }
-        Object result = visit(ctx.condicion());
-        return result instanceof Boolean && (Boolean) result;
-    }
-
-    private void executeForBody(manbelParser.FloopContext ctx) {
-        for (manbelParser.InstruccionContext instr : ctx.instruccion()) {
-            visit(instr);
-        }
-    }
-
-    private void executeForUpdate(manbelParser.FloopContext ctx) {
-        if (ctx.incremento() != null) {
-            visit(ctx.incremento());
-        }
     }
 
     private Object convertirTipo(Object valor, String tipo) {
@@ -422,6 +407,54 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
         } catch (NumberFormatException e) {
             logError("No se pudo convertir a número: " + value);
             return 0.0;
+        }
+    }
+
+    @Override
+    public Object visitIncremento(manbelParser.IncrementoContext ctx) {
+    
+        String varName = ctx.ID().getText();
+
+        // Verificar si la variable existe
+        if (!tablaSimbolos.containsKey(varName)) {
+            logError("Variable no declarada: " + varName);
+            return null;
+        }
+
+        // Obtener el valor actual
+        Object currentValue = tablaSimbolos.get(varName);
+        double numericValue;
+
+        // Convertir a número
+        try {
+            numericValue = convertToNumber(currentValue);
+        } catch (NumberFormatException e) {
+            logError("No se puede incrementar una variable no numérica: " + varName);
+            return null;
+        }
+
+        // Incrementar el valor
+        double newValue = numericValue + 1;
+
+        // Actualizar la tabla de símbolos
+        if (currentValue instanceof Integer) {
+            tablaSimbolos.put(varName, (int) newValue);
+        } else if (currentValue instanceof Double) {
+            tablaSimbolos.put(varName, newValue);
+        } else {
+            // Si no es numérico, lo convertimos a entero
+            tablaSimbolos.put(varName, (int) newValue);
+        }
+
+        // Retornar el valor según sea pre o post-incremento
+        if (ctx.getChild(0) == ctx.ID()) {
+            // Post-incremento (i++): retorna el valor antes de incrementar
+            log("Post-incremento: " + varName + "++ (valor anterior: " + currentValue + ")");
+            return currentValue;
+        } else {
+            // Pre-incremento (++i): retorna el valor después de incrementar
+            log("Pre-incremento: ++" + varName + " (nuevo valor: " + newValue + ")");
+            return newValue;
         }
     }
 

@@ -17,7 +17,12 @@ instruccion
 
 asig: ID '=' expr;
 
-floop: FOR LPAREN asig? ';' condicion? ';' incremento? RPAREN LCURLY (instruccion)* RCURLY;
+floop: FOR LPAREN 
+    (declaracion | asig)? ';' 
+    condicion? ';' 
+    (asig | expr)? 
+    RPAREN 
+    LCURLY (instruccion)* RCURLY;
 
 def : 'if' LPAREN condicion RPAREN 
     LCURLY (instruccion)* RCURLY 

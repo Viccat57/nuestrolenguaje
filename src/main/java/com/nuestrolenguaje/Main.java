@@ -42,13 +42,11 @@ public class Main {
                     }
                 }
 
-                if (tree != null) {
-                    manbelCustomVisitor visitor = new manbelCustomVisitor();
-                    visitor.visit(tree);
-                }
-            } catch (Exception e) {
+                manbelCustomVisitor visitor = new manbelCustomVisitor();
+                visitor.visit(tree);
+            } catch (RecognitionException | IllegalArgumentException e) {
                 System.err.println("Error durante la ejecución:");
-                e.printStackTrace();
+                System.err.println("An error occurred: " + e.getMessage());
             }
 
             System.out.println("FINISH: " + file);
