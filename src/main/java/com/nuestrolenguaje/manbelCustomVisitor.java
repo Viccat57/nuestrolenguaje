@@ -31,7 +31,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
 
     @Override
     public Object visitInstruccion(InstruccionContext ctx) {
-        
+
         String tipoInstruccion = getTipoInstruccion(ctx);
         log("\nProcesando " + tipoInstruccion + ": " + ctx.getText().replaceAll("\\s+", " "));
 
@@ -45,6 +45,8 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
             return visit(ctx.expr());
         } else if (ctx.def() != null) {
             return visit(ctx.def());
+        } else if (ctx.floop() != null) { // Añadir esta condición
+            return visit(ctx.floop());
         } else {
             logError("Instruccion no reconocida: " + ctx.getText());
             return null;
@@ -147,13 +149,13 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
             for (manbelParser.Else_ifContext elseIfCtx : ctx.else_if()) {
                 boolean condicionElseIf = (Boolean) visit(elseIfCtx.condicion());
                 log("Evaluando else if: " + elseIfCtx.condicion().getText() + " -> " + condicionElseIf);
-                
+
                 if (condicionElseIf && !algunElseIfEjecutado) {
                     elseIfCtx.instruccion().forEach(this::visit);
                     algunElseIfEjecutado = true;
                 }
             }
-            
+
             // Si no se ejecutó ningún else if, probar else
             if (!algunElseIfEjecutado && ctx.else_block() != null) {
                 log("Ejecutando else");
@@ -167,7 +169,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
     public Object visitCondicion(manbelParser.CondicionContext ctx) {
         Object izquierda = visit(ctx.expr(0));
         Object derecha = visit(ctx.expr(1));
-        
+
         String operador;
         if (ctx.MAYOR() != null) {
             operador = ">";
@@ -188,12 +190,16 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
         if (operador.matches("[<>]=?")) {
             double numIzq = convertToNumber(izquierda);
             double numDer = convertToNumber(derecha);
-            
+
             switch (operador) {
-                case ">": return numIzq > numDer;
-                case "<": return numIzq < numDer;
-                case ">=": return numIzq >= numDer;
-                case "<=": return numIzq <= numDer;
+                case ">":
+                    return numIzq > numDer;
+                case "<":
+                    return numIzq < numDer;
+                case ">=":
+                    return numIzq >= numDer;
+                case "<=":
+                    return numIzq <= numDer;
             }
         }
 
@@ -240,9 +246,6 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
         }
     }
 
-    
-
-
     // ========== MÉTODOS AUXILIARES ==========
 
     @Override
@@ -251,8 +254,8 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
             // 1. Inicialización (declaración o asignación)
             if (ctx.declaracion() != null) {
                 visit(ctx.declaracion());
-            } else if (ctx.asig() != null && ctx.asig().size() > 0) {
-                visit(ctx.asig(0));
+            } else if (ctx.asig() != null && !ctx.asig().isEmpty()) {
+                visit(ctx.asig(0)); // Procesar la asignación de inicialización si existe
             }
 
             // 2. Bucle principal
@@ -267,7 +270,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
                     if (!(Boolean) cond) {
                         break;
                     }
-                } else if (ctx.declaracion() == null && ctx.asig() == null) {
+                } else if (ctx.declaracion() == null && ctx.asig().isEmpty()) {
                     break; // For infinito sin condición ni inicialización
                 }
 
@@ -276,9 +279,10 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
                     visit(instr);
                 }
 
-                // 2.3 Paso de actualización (asignación o expresión)
-                if (ctx.asig() != null && ctx.asig().size() > 1) {
-                    visit(ctx.asig(1));
+                // 2.3 Paso de actualización (corregido)
+                if (ctx.asig() != null && ctx.asig().size() > 0) {
+                    // Tomar la última asignación como actualización
+                    visit(ctx.asig(ctx.asig().size() - 1));
                 } else if (ctx.expr() != null) {
                     visit(ctx.expr());
                 } else {
@@ -364,16 +368,18 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
     }
 
     private String getTipoInstruccion(InstruccionContext ctx) {
-        if (ctx.declaracion() != null) 
+        if (ctx.declaracion() != null)
             return "Declaracion";
-        if (ctx.asig() != null) 
+        if (ctx.asig() != null)
             return "Asignacion";
-        if (ctx.incremento() != null) 
+        if (ctx.incremento() != null)
             return "Incremento";
-        if (ctx.expr() != null) return 
-            "Expresion";
-        if (ctx.def() != null) return 
-            "If-Else";
+        if (ctx.expr() != null)
+            return "Expresion";
+        if (ctx.def() != null)
+            return "If-Else";
+        if (ctx.floop() != null) // Añadir esta línea
+            return "For";
         return "Instruccion desconocida";
     }
 
@@ -412,7 +418,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
 
     @Override
     public Object visitIncremento(manbelParser.IncrementoContext ctx) {
-    
+
         String varName = ctx.ID().getText();
 
         // Verificar si la variable existe
@@ -458,5 +464,4 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
         }
     }
 
-    
 }
