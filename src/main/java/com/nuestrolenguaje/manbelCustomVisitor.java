@@ -247,8 +247,63 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
 
     @Override
     public Object visitFloop(FloopContext ctx) {
-        System.out.println("Floop: "+ctx.getText());
-        return super.visitFloop(ctx);
+        if (ctx.asig() != null) {
+            visit(ctx.asig());
+        }
+
+        // 2. Bucle principal
+        while (true) {
+            // 2.1 Verificar condición (si existe)
+            if (ctx.condicion() != null) {
+                Boolean condicion = (Boolean) visit(ctx.condicion());
+                if (condicion != null && !condicion) {
+                    break; // Salir si la condición es falsa
+                }
+            }
+
+            // 2.2 Ejecutar el cuerpo del for
+            for (manbelParser.InstruccionContext instr : ctx.instruccion()) {
+                visit(instr);
+            }
+
+            // 2.3 Ejecutar el incremento (si existe)
+            if (ctx.incremento() != null) {
+                visit(ctx.incremento());
+            }
+
+            // 2.4 Si no hay condición, salir después de una iteración
+            if (ctx.condicion() == null) {
+                break;
+            }
+        }
+
+        return null;
+    }
+
+    private void executeForInitialization(manbelParser.FloopContext ctx) {
+        if (ctx.asig() != null) {
+            visit(ctx.asig());
+        }
+    }
+
+    private boolean shouldContinueForLoop(manbelParser.FloopContext ctx) {
+        if (ctx.condicion() == null) {
+            return false; // No hay condición, se ejecuta solo una vez
+        }
+        Object result = visit(ctx.condicion());
+        return result instanceof Boolean && (Boolean) result;
+    }
+
+    private void executeForBody(manbelParser.FloopContext ctx) {
+        for (manbelParser.InstruccionContext instr : ctx.instruccion()) {
+            visit(instr);
+        }
+    }
+
+    private void executeForUpdate(manbelParser.FloopContext ctx) {
+        if (ctx.incremento() != null) {
+            visit(ctx.incremento());
+        }
     }
 
     private Object convertirTipo(Object valor, String tipo) {
