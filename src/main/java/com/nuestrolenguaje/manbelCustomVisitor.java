@@ -60,7 +60,6 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
         String tipo = ctx.TIPO().getText();
         String id = ctx.ID().getText();
         Object valor = (ctx.expr() != null) ? visit(ctx.expr()) : getValorPorDefecto(tipo);
-
         valor = convertirTipo(valor, tipo);
         tablaSimbolos.put(id, valor);
 
@@ -310,8 +309,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
                     return valor;
             }
         } catch (Exception e) {
-            logError("Error de conversión: " + e.getMessage());
-            return getValorPorDefecto(tipo);
+            throw new RuntimeException("Error de conversion: 450384032 :" + e.getMessage());// usar esto en vez de los logerrors
         }
     }
 
@@ -359,12 +357,16 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
     }
 
     private Object dividir(Object a, Object b) {
-        double divisor = ((Number) b).doubleValue();
-        if (divisor == 0) {
-            logError("Division por cero");
-            return Double.NaN;
+        try {
+            double divisor = ((Number) b).doubleValue();
+            if (divisor == 0) {
+                throw new ArithmeticException("Division por cero no permitida");
+            }
+            return ((Number) a).doubleValue() / divisor;
+        } catch (ArithmeticException e) {
+            logError(e.getMessage()); // Muestra el mensaje de la excepción
+            return Double.NaN; // Retorna NaN como valor de error
         }
-        return ((Number) a).doubleValue() / divisor;
     }
 
     private String getTipoInstruccion(InstruccionContext ctx) {
