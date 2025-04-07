@@ -49,7 +49,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
             return visit(ctx.floop());
         } else {
             logError("Instruccion no reconocida: " + ctx.getText());
-            return null;
+            throw new RuntimeException("Instruccion no reconocida: " + ctx.getText());
         }
     }
 
@@ -75,7 +75,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
         // Verificar si la variable existe
         if (!tablaSimbolos.containsKey(id)) {
             logError("Variable no declarada: " + id);
-            return null;
+            throw new RuntimeException("Variable no declarada: " + id);
         }
 
         // Convertir al tipo original
@@ -182,7 +182,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
             operador = "==";
         } else {
             logError("Operador de comparación no reconocido");
-            return false;
+            throw new RuntimeException("Operador de comparación no reconocido");
         }
 
         // Realizar la comparación numérica para operadores relacionales
@@ -220,14 +220,14 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
                 }
             } catch (NumberFormatException e) {
                 logError("Formato numerico invalido: " + numText);
-                return 0; // Valor por defecto
+                throw new RuntimeException("Formato numerico invalido: " + numText);
             }
         } else if (ctx.ID() != null) {
             // Manejo de variables (búsqueda en tabla de símbolos)
             String id = ctx.ID().getText();
             if (!tablaSimbolos.containsKey(id)) {
                 logError("Variable no declarada: " + id);
-                return 0; // Valor por defecto
+                throw new RuntimeException("Variable no declarada: " + id);
             }
             return tablaSimbolos.get(id);
         } else if (ctx.STRING() != null) {
@@ -241,7 +241,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
             return visit(ctx.expr());
         } else {
             logError("Factor no reconocido: " + ctx.getText());
-            return null;
+            throw new RuntimeException("Factor no reconocido: " + ctx.getText());
         }
     }
 
@@ -264,7 +264,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
                     Object cond = visit(ctx.condicion());
                     if (!(cond instanceof Boolean)) {
                         logError("La condición debe ser booleana");
-                        break;
+                        throw new RuntimeException("La condición debe ser booleana");
                     }
                     if (!(Boolean) cond) {
                         break;
@@ -290,6 +290,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
             }
         } catch (Exception e) {
             logError("Error en ciclo for: " + e.getMessage());
+            throw new RuntimeException("Error en ciclo for: " + e.getMessage());
         }
         return null;
     }
@@ -309,7 +310,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
                     return valor;
             }
         } catch (Exception e) {
-            throw new RuntimeException("Error de conversion: 450384032 :" + e.getMessage());// usar esto en vez de los logerrors
+            throw new RuntimeException("Error de conversion: 450384032 :" + e.getMessage());
         }
     }
 
@@ -360,12 +361,12 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
         try {
             double divisor = ((Number) b).doubleValue();
             if (divisor == 0) {
-                throw new ArithmeticException("Division por cero no permitida");
+                throw new ArithmeticException("Division por cero no permitida"); 
             }
             return ((Number) a).doubleValue() / divisor;
         } catch (ArithmeticException e) {
             logError(e.getMessage()); // Muestra el mensaje de la excepción
-            return Double.NaN; // Retorna NaN como valor de error
+            throw new ArithmeticException("Division por cero no permitida");
         }
     }
 
@@ -414,7 +415,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
             return Double.parseDouble(value.toString());
         } catch (NumberFormatException e) {
             logError("No se pudo convertir a número: " + value);
-            return 0.0;
+            throw new RuntimeException("No se pudo convertir a número: " + value);
         }
     }
 
@@ -426,7 +427,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
         // Verificar si la variable existe
         if (!tablaSimbolos.containsKey(varName)) {
             logError("Variable no declarada: " + varName);
-            return null;
+            throw new RuntimeException("Variable no declarada: " + varName);
         }
 
         // Obtener el valor actual
@@ -438,7 +439,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
             numericValue = convertToNumber(currentValue);
         } catch (NumberFormatException e) {
             logError("No se puede incrementar una variable no numérica: " + varName);
-            return null;
+            throw new RuntimeException("No se puede incrementar una variable no numérica: " + varName);
         }
 
         // Incrementar el valor
