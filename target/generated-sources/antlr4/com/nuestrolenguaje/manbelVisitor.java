@@ -35,6 +35,12 @@ public interface manbelVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitAsig(manbelParser.AsigContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link manbelParser#mostrar}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitMostrar(manbelParser.MostrarContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link manbelParser#floop}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
@@ -65,11 +71,26 @@ public interface manbelVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCondicion(manbelParser.CondicionContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link manbelParser#expr}.
+	 * Visit a parse tree produced by the {@code ExpresionComparacion}
+	 * labeled alternative in {@link manbelParser#expr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitExpr(manbelParser.ExprContext ctx);
+	T visitExpresionComparacion(manbelParser.ExpresionComparacionContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ExpresionIncremento}
+	 * labeled alternative in {@link manbelParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExpresionIncremento(manbelParser.ExpresionIncrementoContext ctx);
+	/**
+	 * Visit a parse tree produced by the {@code ExpresionAritmetica}
+	 * labeled alternative in {@link manbelParser#expr}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitExpresionAritmetica(manbelParser.ExpresionAritmeticaContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link manbelParser#incremento}.
 	 * @param ctx the parse tree

@@ -1,9 +1,12 @@
-double x = 3/0;
-int y = 3;
-
-int z = 3;
-if (z > 0) {
-    z = z + 1;
+enterito edad = 20;
+checa (edad >= 18) {
+    mostrar("Eres mayor de edad");
+} sino checa (edad >= 12) {
+    mostrar("Eres adolescente");
+} sino {
+    mostrar("Eres ninio");
 }
 
-int z = "hola";
+foopi (enterito i = 0; i < 10; i++) {
+    mostrar(i);
+}
