@@ -1,4 +1,4 @@
-double x = 3/0;
+double x = 3;
 int y = 3;
 
 int z = 3;
