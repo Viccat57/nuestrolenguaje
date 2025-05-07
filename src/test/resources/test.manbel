@@ -1,5 +1,4 @@
-enterito = x;                                               
-x = 5+3 * 2;
+enterito x = 0;                                               
 enterito y = 1;
 x = 10+y;
 5+3*(2-1);
