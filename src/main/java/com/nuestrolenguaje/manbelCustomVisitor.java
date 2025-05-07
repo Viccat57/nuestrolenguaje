@@ -46,7 +46,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
             return visit(ctx.def());
         } else if (ctx.floop() != null) {
             return visit(ctx.floop());
-        } else if (ctx.mostrar() != null) {  // Esta es la línea clave que faltaba
+        } else if (ctx.mostrar() != null) {
             return visit(ctx.mostrar());
         } else {
             logError("Instruccion no reconocida: " + ctx.getText());
@@ -74,7 +74,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
         Object valor = visit(ctx.expr());
         
         if (valor instanceof Boolean) {
-            String output = (Boolean) valor ? "neta" : "falacia"; // Cambio aquí
+            String output = (Boolean) valor ? "neta" : "falacia";
             System.out.println(output);
         } else {
             System.out.println(valor.toString());
@@ -88,13 +88,11 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
         String id = ctx.ID().getText();
         Object valor = visit(ctx.expr());
 
-        // Verificar si la variable existe
         if (!tablaSimbolos.containsKey(id)) {
             logError("Variable no declarada: " + id);
             throw new RuntimeException("Variable no declarada: " + id);
         }
 
-        // Convertir al tipo original
         Object valorOriginal = tablaSimbolos.get(id);
         valor = convertirValor(valor, valorOriginal);
 
@@ -111,7 +109,6 @@ public Object visitExpresionAritmetica(manbelParser.ExpresionAritmeticaContext c
     Object resultado = visit(ctx.termino(0));
 
     for (int i = 1; i < ctx.termino().size(); i++) {
-        // Usar ctx.op(i - 1) en lugar de ctx.op.get(i - 1)
         String operador = ctx.op.getText(); 
         Object termino = visit(ctx.termino(i));
 
@@ -136,7 +133,6 @@ public Object visitExpresionComparacion(manbelParser.ExpresionComparacionContext
     Object derecha = visit(ctx.expr(1));
     String operador = ctx.op.getText();
     
-    // Lógica de comparación (igual que en visitCondicion)
     if (operador.matches("[<>]=?")) {
         double numIzq = convertToNumber(izquierda);
         double numDer = convertToNumber(derecha);
@@ -155,7 +151,7 @@ public Object visitExpresionComparacion(manbelParser.ExpresionComparacionContext
 
 @Override
 public Object visitExpresionIncremento(manbelParser.ExpresionIncrementoContext ctx) {
-    return visit(ctx.incremento()); // Procesa el incremento como expresión
+    return visit(ctx.incremento()); 
 }
 
     @Override
@@ -184,15 +180,15 @@ public Object visitExpresionIncremento(manbelParser.ExpresionIncrementoContext c
 @Override
 public Object visitDef(manbelParser.DefContext ctx) {
     boolean condicionCheca = (Boolean) visit(ctx.condicion());
-    log("Evaluando checa: " + ctx.condicion().getText() + " -> " + condicionCheca); // Cambio aquí
+    log("Evaluando checa: " + ctx.condicion().getText() + " -> " + condicionCheca);
 
     if (condicionCheca) {
         ctx.instruccion().forEach(this::visit);
     } else {
-        boolean algunSinoChecaEjecutado = false; // Cambio aquí
+        boolean algunSinoChecaEjecutado = false;
         for (manbelParser.Else_ifContext elseIfCtx : ctx.else_if()) {
             boolean condicionSinoCheca = (Boolean) visit(elseIfCtx.condicion());
-            log("Evaluando sino checa: " + elseIfCtx.condicion().getText() + " -> " + condicionSinoCheca); // Cambio aquí
+            log("Evaluando sino checa: " + elseIfCtx.condicion().getText() + " -> " + condicionSinoCheca); 
 
             if (condicionSinoCheca && !algunSinoChecaEjecutado) {
                 elseIfCtx.instruccion().forEach(this::visit);
@@ -201,7 +197,7 @@ public Object visitDef(manbelParser.DefContext ctx) {
         }
 
         if (!algunSinoChecaEjecutado && ctx.else_block() != null) {
-            log("Ejecutando sino"); // Cambio aquí
+            log("Ejecutando sino"); 
             ctx.else_block().instruccion().forEach(this::visit);
         }
     }
@@ -210,11 +206,10 @@ public Object visitDef(manbelParser.DefContext ctx) {
 
     @Override
     public Object visitCondicion(manbelParser.CondicionContext ctx) {
-        // 1. Evaluar ambos lados de la condición
+       
         Object izquierda = visit(ctx.expr(0));
         Object derecha = visit(ctx.expr(1));
     
-        // 2. Determinar qué operador se está usando
         String operador;
         if (ctx.MAYOR() != null) {
             operador = ">";
@@ -231,7 +226,6 @@ public Object visitDef(manbelParser.DefContext ctx) {
             throw new RuntimeException("Operador de comparación no reconocido");
         }
     
-        // 3. Comparaciones numéricas (>, <, >=, <=)
         if (operador.matches("[<>]=?")) {
             try {
                 double numIzq = convertToNumber(izquierda);
@@ -249,24 +243,19 @@ public Object visitDef(manbelParser.DefContext ctx) {
             }
         }
     
-        // 4. Comparación de igualdad (==)
         if (operador.equals("==")) {
-            // Caso especial para números (1.0 == 1 debería ser true)
             if (izquierda instanceof Number && derecha instanceof Number) {
                 return ((Number) izquierda).doubleValue() == ((Number) derecha).doubleValue();
             }
-            // Comparación normal para otros tipos
             return Objects.equals(izquierda, derecha);
         }
     
-        // Esto no debería ocurrir nunca debido a las validaciones anteriores
         throw new RuntimeException("Operador no manejado: " + operador);
     }
 
     @Override
     public Object visitFactor(manbelParser.FactorContext ctx) {
         if (ctx.NUM() != null) {
-            // Manejo de números (enteros y decimales)
             String numText = ctx.NUM().getText();
             try {
                 if (numText.contains(".")) {
@@ -306,16 +295,13 @@ public Object visitDef(manbelParser.DefContext ctx) {
     @Override
     public Object visitFloop(FloopContext ctx) {
         try {
-            // 1. Inicialización
             if (ctx.declaracion() != null) {
                 visit(ctx.declaracion());
             } else if (!ctx.asig().isEmpty()) {
-                visit(ctx.asig(0)); // Asignación inicial (ej: i = 0)
+                visit(ctx.asig(0));
             }
     
-            // 2. Bucle principal
             while (true) {
-                // 2.1 Verificar condición
                 if (ctx.condicion() != null) {
                     Object cond = visit(ctx.condicion());
                     if (!(cond instanceof Boolean)) {
@@ -323,7 +309,7 @@ public Object visitDef(manbelParser.DefContext ctx) {
                         throw new RuntimeException("La condición debe ser booleana");
                     }
                     if (!(Boolean) cond) {
-                        break; // Salir si la condición es falsa
+                        break; 
                     }
                 }
     
@@ -334,10 +320,9 @@ public Object visitDef(manbelParser.DefContext ctx) {
     
                 // 2.3 Paso de actualización (¡Clave aquí!)
                 if (!ctx.asig().isEmpty()) {
-                    // Ejecutar la última asignación/incremento (ej: i++)
                     visit(ctx.asig(ctx.asig().size() - 1)); 
                 } else if (ctx.incremento() != null) {
-                    visit(ctx.incremento()); // Procesar incrementos (i++)
+                    visit(ctx.incremento()); 
                 }
             }
         } catch (Exception e) {
@@ -350,13 +335,13 @@ public Object visitDef(manbelParser.DefContext ctx) {
     private Object convertirTipo(Object valor, String tipo) {
         try {
             switch (tipo) {
-                case "enterito":     // Antes: "int"
+                case "enterito":     
                     return ((Number) valor).intValue();
-                case "pedacito":    // Antes: "double"
+                case "pedacito":   
                     return ((Number) valor).doubleValue();
-                case "bolas":       // Antes: "boolean"
+                case "bolas":       
                     return Boolean.parseBoolean(valor.toString());
-                case "texto":       // Antes: "String"
+                case "texto":       
                     return valor.toString();
                 default:
                     return valor;
@@ -372,7 +357,7 @@ public Object visitDef(manbelParser.DefContext ctx) {
             case "pedacito":
                 return 0.0;
             case "bolas":
-                return false; // Aunque el valor se mostrará como "falacia"
+                return false; 
             case "texto":
                 return "";
             default:
@@ -389,9 +374,6 @@ public Object visitDef(manbelParser.DefContext ctx) {
         System.err.println("[ERROR] " + mensaje);
     }
 
-    // ... (métodos sumar, restar, multiplicar, dividir)
-
-    // Agrega estos métodos en la misma clase
 
     private Object sumar(Object a, Object b) {
         if (a instanceof String || b instanceof String) {
@@ -421,7 +403,6 @@ public Object visitDef(manbelParser.DefContext ctx) {
         }
     }
 
-// 3. Actualiza getTipoInstruccion
 private String getTipoInstruccion(InstruccionContext ctx) {
     if (ctx.declaracion() != null) return "Declaracion";
     if (ctx.asig() != null) return "Asignacion";
@@ -444,13 +425,11 @@ private String getTipoInstruccion(InstruccionContext ctx) {
 
     @Override
     public Object visitElse_if(manbelParser.Else_ifContext ctx) {
-        // Esta visita ya se maneja en visitDef, pero necesitamos implementarla
         return visit(ctx.condicion());
     }
 
     @Override
     public Object visitElse_block(manbelParser.Else_blockContext ctx) {
-        // Esta visita ya se maneja en visitDef
         return null;
     }
 

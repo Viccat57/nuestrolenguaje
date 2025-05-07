@@ -4,7 +4,7 @@ programa
     : (instruccion)*
     ;
 
-declaracion : TIPO ID (EQ expr)?;  // Hace el =expr opcional
+declaracion : TIPO ID (EQ expr)?; 
 
 instruccion
     : declaracion SEMI
@@ -23,7 +23,7 @@ mostrar : MOSTRAR LPAREN expr RPAREN;
 floop: 'foopi' LPAREN 
     (declaracion | asig)? ';' 
     condicion? ';' 
-    (asig | incremento)?  // Acepta asignaciones o incrementos
+    (asig | incremento)?  
     RPAREN 
     LCURLY (instruccion)* RCURLY;
 
@@ -65,7 +65,7 @@ factor: NUM
       | ID 
       | STRING 
       | BOOL 
-      | '(' expr ')'  // Paréntesis
+      | '(' expr ')'  
       ;
 
 SUM : '+';
