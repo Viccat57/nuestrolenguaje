@@ -1,4 +1,4 @@
-// Generated from c:/automatas II/nuestrolenguajeV2/nuestrolenguaje/src/main/antlr4/com/nuestrolenguaje/manbel.g4 by ANTLR 4.13.1
+// Generated from c:/Users/Paulina/Documents/TECNM/Automatas2/visual/nuestrolenguaje/src/main/antlr4/com/nuestrolenguaje/manbel.g4 by ANTLR 4.13.1
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
 /**
@@ -46,6 +46,16 @@ public interface manbelListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitAsig(manbelParser.AsigContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link manbelParser#mostrar}.
+	 * @param ctx the parse tree
+	 */
+	void enterMostrar(manbelParser.MostrarContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link manbelParser#mostrar}.
+	 * @param ctx the parse tree
+	 */
+	void exitMostrar(manbelParser.MostrarContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link manbelParser#floop}.
 	 * @param ctx the parse tree
@@ -97,15 +107,41 @@ public interface manbelListener extends ParseTreeListener {
 	 */
 	void exitCondicion(manbelParser.CondicionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link manbelParser#expr}.
+	 * Enter a parse tree produced by the {@code ExpresionComparacion}
+	 * labeled alternative in {@link manbelParser#expr}.
 	 * @param ctx the parse tree
 	 */
-	void enterExpr(manbelParser.ExprContext ctx);
+	void enterExpresionComparacion(manbelParser.ExpresionComparacionContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link manbelParser#expr}.
+	 * Exit a parse tree produced by the {@code ExpresionComparacion}
+	 * labeled alternative in {@link manbelParser#expr}.
 	 * @param ctx the parse tree
 	 */
-	void exitExpr(manbelParser.ExprContext ctx);
+	void exitExpresionComparacion(manbelParser.ExpresionComparacionContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code ExpresionIncremento}
+	 * labeled alternative in {@link manbelParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterExpresionIncremento(manbelParser.ExpresionIncrementoContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code ExpresionIncremento}
+	 * labeled alternative in {@link manbelParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitExpresionIncremento(manbelParser.ExpresionIncrementoContext ctx);
+	/**
+	 * Enter a parse tree produced by the {@code ExpresionAritmetica}
+	 * labeled alternative in {@link manbelParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void enterExpresionAritmetica(manbelParser.ExpresionAritmeticaContext ctx);
+	/**
+	 * Exit a parse tree produced by the {@code ExpresionAritmetica}
+	 * labeled alternative in {@link manbelParser#expr}.
+	 * @param ctx the parse tree
+	 */
+	void exitExpresionAritmetica(manbelParser.ExpresionAritmeticaContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link manbelParser#incremento}.
 	 * @param ctx the parse tree

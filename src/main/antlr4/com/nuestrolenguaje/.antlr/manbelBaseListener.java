@@ -1,4 +1,4 @@
-// Generated from c:/automatas II/nuestrolenguajeV2/nuestrolenguaje/src/main/antlr4/com/nuestrolenguaje/manbel.g4 by ANTLR 4.13.1
+// Generated from c:/Users/Paulina/Documents/TECNM/Automatas2/visual/nuestrolenguaje/src/main/antlr4/com/nuestrolenguaje/manbel.g4 by ANTLR 4.13.1
 
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -64,6 +64,18 @@ public class manbelBaseListener implements manbelListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterMostrar(manbelParser.MostrarContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitMostrar(manbelParser.MostrarContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterFloop(manbelParser.FloopContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -124,13 +136,37 @@ public class manbelBaseListener implements manbelListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterExpr(manbelParser.ExprContext ctx) { }
+	@Override public void enterExpresionComparacion(manbelParser.ExpresionComparacionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitExpr(manbelParser.ExprContext ctx) { }
+	@Override public void exitExpresionComparacion(manbelParser.ExpresionComparacionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExpresionIncremento(manbelParser.ExpresionIncrementoContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExpresionIncremento(manbelParser.ExpresionIncrementoContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterExpresionAritmetica(manbelParser.ExpresionAritmeticaContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitExpresionAritmetica(manbelParser.ExpresionAritmeticaContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
