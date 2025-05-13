@@ -10,29 +10,21 @@ import com.nuestrolenguaje.manbelParser.InstruccionContext;
 public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
 
     private final Map<String, Object> tablaSimbolos = new HashMap<>();
-    private boolean debugMode = true;
 
     // ========== MÉTODOS PRINCIPALES ==========
 
     @Override
     public Object visitPrograma(manbelParser.ProgramaContext ctx) {
-        log("=== INICIANDO EJECUCION ===");
 
         for (manbelParser.InstruccionContext instr : ctx.instruccion()) {
             visit(instr);
         }
-
-        log("\n=== TABLA DE SIMBOLOS FINAL ===");
-        tablaSimbolos.forEach((k, v) -> System.out.printf("%-10s = %-8s (%s)%n",
-                k, v, (v != null) ? v.getClass().getSimpleName() : "null"));
-
         return null;
     }
 
     @Override
     public Object visitInstruccion(InstruccionContext ctx) {
         String tipoInstruccion = getTipoInstruccion(ctx);
-        log("\nProcesando " + tipoInstruccion + ": " + ctx.getText().replaceAll("\\s+", " "));
     
         if (ctx.declaracion() != null) {
             return visit(ctx.declaracion());
@@ -64,7 +56,6 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
         valor = convertirTipo(valor, tipo);
         tablaSimbolos.put(id, valor);
 
-        log("Declarado: " + tipo + " " + id + " = " + valor);
         return valor;
     }
 
@@ -97,7 +88,6 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
         valor = convertirValor(valor, valorOriginal);
 
         tablaSimbolos.put(id, valor);
-        log("Asignado: " + id + " = " + valor);
         return valor;
     }
 
@@ -121,8 +111,6 @@ public Object visitExpresionAritmetica(manbelParser.ExpresionAritmeticaContext c
                 break;
         }
     }
-
-    log("Resultado expresion aritmetica: " + resultado);
     return resultado;
 }
 
@@ -180,7 +168,6 @@ public Object visitExpresionIncremento(manbelParser.ExpresionIncrementoContext c
 @Override
 public Object visitDef(manbelParser.DefContext ctx) {
     boolean condicionCheca = (Boolean) visit(ctx.condicion());
-    log("Evaluando checa: " + ctx.condicion().getText() + " -> " + condicionCheca);
 
     if (condicionCheca) {
         ctx.instruccion().forEach(this::visit);
@@ -188,7 +175,6 @@ public Object visitDef(manbelParser.DefContext ctx) {
         boolean algunSinoChecaEjecutado = false;
         for (manbelParser.Else_ifContext elseIfCtx : ctx.else_if()) {
             boolean condicionSinoCheca = (Boolean) visit(elseIfCtx.condicion());
-            log("Evaluando sino checa: " + elseIfCtx.condicion().getText() + " -> " + condicionSinoCheca); 
 
             if (condicionSinoCheca && !algunSinoChecaEjecutado) {
                 elseIfCtx.instruccion().forEach(this::visit);
@@ -197,7 +183,6 @@ public Object visitDef(manbelParser.DefContext ctx) {
         }
 
         if (!algunSinoChecaEjecutado && ctx.else_block() != null) {
-            log("Ejecutando sino"); 
             ctx.else_block().instruccion().forEach(this::visit);
         }
     }
@@ -365,11 +350,6 @@ public Object visitDef(manbelParser.DefContext ctx) {
         }
     }
 
-    private void log(String mensaje) {
-        if (debugMode)
-            System.out.println("[LOG] " + mensaje);
-    }
-
     private void logError(String mensaje) {
         System.err.println("[ERROR] " + mensaje);
     }
@@ -484,11 +464,9 @@ private String getTipoInstruccion(InstruccionContext ctx) {
         // Retornar el valor según sea pre o post-incremento
         if (ctx.getChild(0) == ctx.ID()) {
             // Post-incremento (i++): retorna el valor antes de incrementar
-            log("Post-incremento: " + varName + "++ (valor anterior: " + currentValue + ")");
             return currentValue;
         } else {
             // Pre-incremento (++i): retorna el valor después de incrementar
-            log("Pre-incremento: ++" + varName + " (nuevo valor: " + newValue + ")");
             return newValue;
         }
     }
