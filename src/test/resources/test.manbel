@@ -1,9 +1,31 @@
-double x = 3;
-int y = 3;
+enterito = x;                                               
+x = 5+3 * 2;
+enterito y = 1;
+x = 10+y;
+5+3*(2-1);
+enterito valor = 10;
+enterito = resultado=(20-valor)/5+3;
+x++;
+x=5;
 
-int z = 3;
-if (z > 0) {
-    z = z + 1;
+mostrar(5<3);
+
+checa(x>0)
+{
+y=y+1;
 }
 
-int z = "hola";
+enterito edad = 20;
+checa (edad >= 18) {
+    mostrar("Eres mayor de edad");
+} sino checa (edad >= 12) {
+    mostrar("Eres adolescente");
+} sino {
+    mostrar("Eres ninio");
+}
+
+foopi (enterito i = 0; i <3 ; i++) {
+    mostrar(i);
+}
+
+mostrar(5+3);

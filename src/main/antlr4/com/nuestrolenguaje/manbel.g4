@@ -4,7 +4,7 @@ programa
     : (instruccion)*
     ;
 
-declaracion : TIPO ID (EQ expr)?;  // Hace el =expr opcional
+declaracion : TIPO ID (EQ expr)?; 
 
 instruccion
     : declaracion SEMI
@@ -13,28 +13,31 @@ instruccion
     | expr SEMI
     | def
     | floop
+    | mostrar SEMI
     ;
 
 asig: ID '=' expr;
 
-floop: FOR LPAREN 
+mostrar : MOSTRAR LPAREN expr RPAREN;
+
+floop: 'foopi' LPAREN 
     (declaracion | asig)? ';' 
     condicion? ';' 
-    (asig | expr)? 
+    (asig | incremento)?  
     RPAREN 
     LCURLY (instruccion)* RCURLY;
 
-def : 'if' LPAREN condicion RPAREN 
+def : 'checa' LPAREN condicion RPAREN
     LCURLY (instruccion)* RCURLY 
     (else_if)*
     (else_block)?
     ;
 
-else_if : 'else' 'if' LPAREN condicion RPAREN 
+else_if : 'sino' 'checa' LPAREN condicion RPAREN 
         LCURLY (instruccion)* RCURLY 
         ;
 
-else_block : 'else' 
+else_block : 'sino' 
             LCURLY (instruccion)* RCURLY 
             ;
 
@@ -46,17 +49,23 @@ condicion :
     | expr IGUAL expr
     ;
 
-expr: termino (op=(SUM|REST) termino)*;
+expr: 
+    termino (op=(SUM|REST) termino)*             # ExpresionAritmetica
+    | expr op=(MAYOR|MENOR|MAYOR_EQ|MENOR_EQ|IGUAL) expr  # ExpresionComparacion
+    | incremento                                  # ExpresionIncremento 
+    ;
+
 
 incremento: ID SUM SUM | SUM SUM ID;
 
 termino: factor (('*' | '/') factor)*;
 
+
 factor: NUM 
       | ID 
       | STRING 
       | BOOL 
-      | '(' expr ')'  // Paréntesis
+      | '(' expr ')'  
       ;
 
 SUM : '+';
@@ -75,13 +84,15 @@ MENOR : '<';
 MAYOR_EQ : '>=';
 MENOR_EQ : '<=';
 IGUAL : '==';
-IF : 'if';
-ELSE : 'else';
-FOR : 'for';
+IF : 'checa';
+ELSE : 'sino';
+FOR : 'foopi';
+MOSTRAR : 'mostrar';
+COMMENT : '//' .*? '\n' -> skip;
 
-TIPO : 'int' | 'double' | 'String' | 'boolean' ;
+TIPO : 'enterito' | 'pedacito' | 'texto' | 'bolas' ;
 STRING : '"' (~["])* '"' ;
-BOOL   : 'true' | 'false' ;
+BOOL   : 'neta' | 'falacia' ;
 NUM : [0-9]+('.'[0-9]+)? ;
 ID: [a-zA-Z_][a-zA-Z_0-9]* ;
 WS: [ \t\r\n]+ -> skip;
