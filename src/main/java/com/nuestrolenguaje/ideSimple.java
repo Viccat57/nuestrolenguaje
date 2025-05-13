@@ -1,15 +1,8 @@
 package com.nuestrolenguaje;
-import java.awt.Image;
+
 import java.io.File;
-import javax.swing.BorderFactory;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
 import javax.swing.JFileChooser;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
+
 
 public class ideSimple extends javax.swing.JFrame {
 
