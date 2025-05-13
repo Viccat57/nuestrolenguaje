@@ -3,7 +3,7 @@ enterito y = 1;
 x = 10+y;
 5+3*(2-1);
 enterito valor = 10;
-enterito = resultado=(20-valor)/5+3;
+enterito resultado=(20-valor)/5+3;
 x++;
 x=5;
 
