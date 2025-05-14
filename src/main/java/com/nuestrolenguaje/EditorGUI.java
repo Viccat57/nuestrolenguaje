@@ -1,8 +1,12 @@
 package com.nuestrolenguaje;
 
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -14,7 +18,8 @@ public class EditorGUI extends JFrame {
     private JButton executeBtn;
     private JButton loadTestBtn;
     private PrintStream originalOut;
-    private PrintStream originalErr;
+    private PrintStream originalErr; 
+    private JButton translateBtn; // Nuevo botón
     
     public EditorGUI() {
         setTitle("Editor Manbel");
@@ -46,6 +51,11 @@ public class EditorGUI extends JFrame {
         
         executeBtn.addActionListener(this::executeCode);
         loadTestBtn.addActionListener(this::loadTestFile);
+
+        // Agregar el nuevo botón
+        translateBtn = new JButton("Traducir a JS");
+        translateBtn.addActionListener(this::translateToJs);
+        buttonPanel.add(translateBtn);
         
         // Configurar redirección de salida
         redirectSystemStreams();
@@ -67,6 +77,68 @@ public class EditorGUI extends JFrame {
         mainPanel.add(splitPane, BorderLayout.CENTER);
         add(mainPanel);
     }
+/////////////////////////////////////////////////////////
+/// Traducción a JavaScript ////////////////////////////
+/////////////////////////////////////////////////////////
+        private void translateToJs(ActionEvent e) {
+        String code = textArea.getText();
+        if (code.isEmpty()) {
+            consoleArea.append("No hay código para traducir\n");
+            return;
+        }
+        
+        try {
+            // Parsear el código Manbel
+            CharStream input = CharStreams.fromString(code, "Editor");
+            manbelLexer lexer = new manbelLexer(input);
+            manbelParser parser = new manbelParser(new CommonTokenStream(lexer));
+            
+            parser.removeErrorListeners();
+            parser.addErrorListener(new BaseErrorListener() {
+                @Override
+                public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
+                    int line, int charPositionInLine, String msg, RecognitionException e) {
+                    consoleArea.append("Error de sintaxis en línea " + line + ":" + charPositionInLine + " - " + msg + "\n");
+                }
+            });
+            
+            manbelParser.ProgramaContext tree = parser.programa();
+            
+            // Traducir a JavaScript
+            String jsCode = new TraductorJsVisitor().visit(tree);
+            
+            // Mostrar el código JS en la consola
+            consoleArea.append("\nCódigo JavaScript generado:\n");
+            consoleArea.append(jsCode + "\n");
+            
+            // Guardar en archivo
+            saveJsFile(jsCode);
+            
+        } catch (Exception ex) {
+            consoleArea.append("Error durante la traducción:\n" + ex.getMessage() + "\n");
+        }
+    }
+    
+    private void saveJsFile(String jsCode) {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Guardar como JavaScript");
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Archivos JavaScript (*.js)", "js"));
+        fileChooser.setSelectedFile(new File("output.js"));
+        
+        int userSelection = fileChooser.showSaveDialog(this);
+        if (userSelection == JFileChooser.APPROVE_OPTION) {
+            File fileToSave = fileChooser.getSelectedFile();
+            try (FileWriter writer = new FileWriter(fileToSave)) {
+                writer.write(jsCode);
+                consoleArea.append("Archivo guardado exitosamente: " + fileToSave.getAbsolutePath() + "\n");
+            } catch (Exception ex) {
+                consoleArea.append("Error al guardar el archivo: " + ex.getMessage() + "\n");
+            }
+        }
+    }
+
+    /////////////////////////////////////////
+    //////////////////////////////////////////////
     
     private void redirectSystemStreams() {
         originalOut = System.out;
