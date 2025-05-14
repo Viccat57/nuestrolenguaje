@@ -8,7 +8,6 @@ import javax.swing.*;
 // Añade estos imports de ANTLR
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
-import org.antlr.v4.runtime.CommonTokenStream;
 
 public class Main {
     public static final String EXTENSION = "manbel";

@@ -52,7 +52,7 @@ public class TraductorJsVisitor extends manbelBaseVisitor<String> {
         String left = visit(ctx.expr(0));
         String right = visit(ctx.expr(1));
         String op = ctx.op.getText();
-        return "(" + left + " " + op + " " + right + ")";
+        return  left + " " + op + " " + right ;
     }
 
     @Override
