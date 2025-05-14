@@ -1,18 +1,39 @@
 package com.nuestrolenguaje;
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.nio.file.Files;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import org.antlr.v4.runtime.*;
+
+import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTextArea;
+
+import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
 
 public class EditorGUI extends JFrame {
     private JTextArea textArea;
     private JTextArea consoleArea;
     private JButton executeBtn;
     private JButton loadTestBtn;
+    private JButton archivoPyBtn;
     private PrintStream originalOut;
     private PrintStream originalErr;
     
@@ -43,9 +64,11 @@ public class EditorGUI extends JFrame {
         // Botones
         executeBtn = new JButton("Ejecutar Código");
         loadTestBtn = new JButton("Cargar test.manbel");
+        archivoPyBtn = new JButton("Descargar archivo.py");
         
         executeBtn.addActionListener(this::executeCode);
         loadTestBtn.addActionListener(this::loadTestFile);
+        archivoPyBtn.addActionListener(this::archivoPy);
         
         // Configurar redirección de salida
         redirectSystemStreams();
@@ -53,6 +76,7 @@ public class EditorGUI extends JFrame {
         // Ensamblar interfaz
         buttonPanel.add(executeBtn);
         buttonPanel.add(loadTestBtn);
+        buttonPanel.add(archivoPyBtn);
         
         editorPanel.add(new JLabel("Editor de Código"), BorderLayout.NORTH);
         editorPanel.add(editorScroll, BorderLayout.CENTER);
@@ -105,6 +129,34 @@ public class EditorGUI extends JFrame {
             processCode(testContent, "test.manbel");
         } catch (IOException ex) {
             consoleArea.append("Error al cargar el archivo de prueba:\n" + ex.getMessage() + "\n");
+        }
+    }
+
+    private void archivoPy(ActionEvent e) {
+        String inputCode = textArea.getText();
+        
+        try {
+            TraductorPyVisitor translator = new TraductorPyVisitor();
+            String pythonCode = translator.translate(inputCode); // Usamos translate() en lugar de visitCode()
+            
+            // Resto del código para guardar el archivo...
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Guardar código Python");
+            fileChooser.setSelectedFile(new File("codigo.py"));
+            
+            if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooser.getSelectedFile();
+                if (!file.getName().toLowerCase().endsWith(".py")) {
+                    file = new File(file.getAbsolutePath() + ".py");
+                }
+                Files.write(file.toPath(), pythonCode.getBytes());
+                JOptionPane.showMessageDialog(null, "Archivo guardado exitosamente!");
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, 
+                "Error de traducción:\n" + ex.getMessage(),
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
         }
     }
     
