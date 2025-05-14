@@ -1,4 +1,3 @@
-checa (5>3) {
 enterito valor = 10;
 enterito resultado=(20-valor)/5+3;
 mostrar(resultado);
@@ -24,4 +23,3 @@ foopi (enterito i = 0; i <3 ; i++) {
 }
 
 mostrar(5+3);
-}
