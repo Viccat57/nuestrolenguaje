@@ -1,28 +1,15 @@
 package com.nuestrolenguaje;
 
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.FlowLayout;
+import javax.swing.*;
 import javax.swing.filechooser.FileNameExtensionFilter;
-import java.awt.Font;
+import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.io.File;
-import java.nio.file.Files;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTextArea;
+import java.nio.file.Files;
 
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.CharStream;
@@ -31,12 +18,10 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 
+
 public class EditorGUI extends JFrame {
     private JTextArea textArea;
     private JTextArea consoleArea;
-    private JButton executeBtn;
-    private JButton loadTestBtn;
-    private JButton archivoPyBtn;
     private PrintStream originalOut;
     private PrintStream originalErr;
     private boolean darkMode = true;
@@ -54,7 +39,12 @@ public class EditorGUI extends JFrame {
         setSize(1000, 700);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
-        // Configurar paneles
+        initComponents();
+        applyTheme(); // Aplicar tema inicial
+    }
+    
+        private void initComponents() {
+        // Configurar el layout principal
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
         
@@ -72,7 +62,7 @@ public class EditorGUI extends JFrame {
         jsBtn.addActionListener(this::translateToJs);
         
         JButton pyBtn = createStyledButton("Python", new Color(65, 105, 225));
-        pyBtn.addActionListener(e -> consoleArea.append("Traducción a Python aún no implementada\n"));
+        pyBtn.addActionListener(this::archivoPy);
         
         // Botón para cambiar tema
         JButton themeBtn = createStyledButton("Toggle Theme", new Color(128, 0, 128));
@@ -102,27 +92,12 @@ public class EditorGUI extends JFrame {
         consoleArea.setEditable(false);
         
         JScrollPane consoleScroll = new JScrollPane(consoleArea);
-        
-        // Botones
-        executeBtn = new JButton("Ejecutar Código");
-        loadTestBtn = new JButton("Cargar test.manbel");
-        archivoPyBtn = new JButton("Descargar archivo.py");
-        
-        executeBtn.addActionListener(this::executeCode);
-        loadTestBtn.addActionListener(this::loadTestFile);
-        archivoPyBtn.addActionListener(this::archivoPy);
         consoleScroll.setBorder(BorderFactory.createTitledBorder("Output"));
         consoleScroll.setPreferredSize(new Dimension(0, 200));
         
         // Configurar redirección de salida
         redirectSystemStreams();
         
-        // Ensamblar interfaz
-        buttonPanel.add(executeBtn);
-        buttonPanel.add(loadTestBtn);
-        buttonPanel.add(archivoPyBtn);
-        
-        editorPanel.add(new JLabel("Editor de Código"), BorderLayout.NORTH);
         // Añadir componentes al panel principal
         editorPanel.add(editorScroll, BorderLayout.CENTER);
         consolePanel.add(consoleScroll, BorderLayout.CENTER);
@@ -188,7 +163,40 @@ public class EditorGUI extends JFrame {
         button.setCursor(new Cursor(Cursor.HAND_CURSOR));
         return button;
     }
+
+
+    ///////////////////////////////////////////
+    /// Traducción a Python ///////////////////
+    /// ///////////////////////////////////////////
     
+    private void archivoPy(ActionEvent e) {
+        String inputCode = textArea.getText();
+        
+        try {
+            TraductorPyVisitor translator = new TraductorPyVisitor();
+            String pythonCode = translator.translate(inputCode); // Usamos translate() en lugar de visitCode()
+            
+            // Resto del código para guardar el archivo...
+            JFileChooser fileChooser = new JFileChooser();
+            fileChooser.setDialogTitle("Guardar código Python");
+            fileChooser.setSelectedFile(new File("codigo.py"));
+            
+            if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+                File file = fileChooser.getSelectedFile();
+                if (!file.getName().toLowerCase().endsWith(".py")) {
+                    file = new File(file.getAbsolutePath() + ".py");
+                }
+                Files.write(file.toPath(), pythonCode.getBytes());
+                JOptionPane.showMessageDialog(null, "Archivo guardado exitosamente!");
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, 
+                "Error de traducción:\n" + ex.getMessage(),
+                "Error", 
+                JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
 /////////////////////////////////////////////////////////
 /// Traducción a JavaScript ////////////////////////////
 /////////////////////////////////////////////////////////
@@ -220,11 +228,13 @@ public class EditorGUI extends JFrame {
             String jsCode = new TraductorJsVisitor().visit(tree);
             
             // Mostrar el código JS en la consola
-            consoleArea.append("\nCódigo JavaScript generado:\n");
-            consoleArea.append(jsCode + "\n");
+            //consoleArea.append("\nCódigo JavaScript generado:\n");
+            //consoleArea.append(jsCode + "\n");
+
             
             // Guardar en archivo
             saveJsFile(jsCode);
+            JOptionPane.showMessageDialog(null, "Archivo guardado exitosamente!");
             
         } catch (Exception ex) {
             consoleArea.append("Error durante la traducción:\n" + ex.getMessage() + "\n");
@@ -302,34 +312,6 @@ private void loadManbelFile(ActionEvent e) {
         }
     }
 }
-
-    private void archivoPy(ActionEvent e) {
-        String inputCode = textArea.getText();
-        
-        try {
-            TraductorPyVisitor translator = new TraductorPyVisitor();
-            String pythonCode = translator.translate(inputCode); // Usamos translate() en lugar de visitCode()
-            
-            // Resto del código para guardar el archivo...
-            JFileChooser fileChooser = new JFileChooser();
-            fileChooser.setDialogTitle("Guardar código Python");
-            fileChooser.setSelectedFile(new File("codigo.py"));
-            
-            if (fileChooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-                File file = fileChooser.getSelectedFile();
-                if (!file.getName().toLowerCase().endsWith(".py")) {
-                    file = new File(file.getAbsolutePath() + ".py");
-                }
-                Files.write(file.toPath(), pythonCode.getBytes());
-                JOptionPane.showMessageDialog(null, "Archivo guardado exitosamente!");
-            }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, 
-                "Error de traducción:\n" + ex.getMessage(),
-                "Error", 
-                JOptionPane.ERROR_MESSAGE);
-        }
-    }
     
     public void processCode(String code, String sourceName) {
         consoleArea.append("=== Procesando: " + sourceName + " ===\n");

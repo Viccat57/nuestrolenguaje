@@ -1,7 +1,5 @@
-
-
 checa (5>3) {
-    enterito valor = 10;
+enterito valor = 10;
 enterito resultado=(20-valor)/5+3;
 mostrar(resultado);
 mostrar(5<3);
