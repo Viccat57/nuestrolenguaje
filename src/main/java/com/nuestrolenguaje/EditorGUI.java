@@ -65,7 +65,7 @@ public class EditorGUI extends JFrame {
         pyBtn.addActionListener(this::archivoPy);
         
         // Botón para cambiar tema
-        JButton themeBtn = createStyledButton("Toggle Theme", new Color(128, 0, 128));
+        JButton themeBtn = createStyledButton("Cambiar tema", new Color(128, 0, 128));
         themeBtn.addActionListener(e -> {
             darkMode = !darkMode;
             applyTheme();
