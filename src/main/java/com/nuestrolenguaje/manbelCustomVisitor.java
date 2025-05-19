@@ -7,6 +7,7 @@ import java.util.Objects;
 import com.nuestrolenguaje.manbelParser.FloopContext;
 import com.nuestrolenguaje.manbelParser.InstruccionContext;
 
+
 public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
 
     private final Map<String, Object> tablaSimbolos = new HashMap<>();

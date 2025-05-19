@@ -1,27 +1,27 @@
 checa (5>3) {
-enterito valor = 10;
-enterito resultado=(20-valor)/5+3;
-mostrar(resultado);
-mostrar(5<3);
+    enterito valor = 10;
+    enterito resultado=(20-valor)/5+3;
+    mostrar(resultado);
+    mostrar(5<3);
 
-enterito x = 1;
-checa(x>0)
-{
-mostrar("hola");
-}
+    enterito x = 1;
+    
+    checa(x>0){
+        mostrar("hola");
+    }
 
-enterito edad = 20;
-checa (edad >= 18) {
-    mostrar("Eres mayor de edad");
-} sino checa (edad >= 12) {
-    mostrar("Eres adolescente");
-} sino {
-    mostrar("Eres ninio");
-}
+    enterito edad = 20;
+    checa (edad >= 18) {
+        mostrar("Eres mayor de edad");
+    }sino checa (edad >= 12) {
+        mostrar("Eres adolescente");
+    } sino {
+        mostrar("Eres ninio");
+    }
 
-foopi (enterito i = 0; i <3 ; i++) {
-    mostrar(i);
-}
+    foopi (enterito i = 0; i < 3 ; i++) {
+        mostrar(i);
+    }
 
-mostrar(5+3);
+    mostrar(5+3);
 }

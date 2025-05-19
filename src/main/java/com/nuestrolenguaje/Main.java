@@ -4,10 +4,10 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
 import javax.swing.*;
-
-// Añade estos imports de ANTLR
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
+import com.nuestrolenguaje.GUI.EditorGUI;
+
 
 public class Main {
     public static final String EXTENSION = "manbel";
