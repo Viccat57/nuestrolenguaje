@@ -7,16 +7,18 @@ import java.util.Objects;
 import com.nuestrolenguaje.manbelParser.FloopContext;
 import com.nuestrolenguaje.manbelParser.InstruccionContext;
 
-
+/**
+ * Visitor personalizado para ejecución/interprete del lenguaje Manbel.
+ * Maneja la lógica de ejecución y mantiene el estado del programa.
+ */
 public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
-
-    private final Map<String, Object> tablaSimbolos = new HashMap<>();
+    private final Map<String, Object> tablaSimbolos = new HashMap<>(); // Tabla de símbolos para variables
 
     // ========== MÉTODOS PRINCIPALES ==========
 
     @Override
     public Object visitPrograma(manbelParser.ProgramaContext ctx) {
-
+        // Ejecutar todas las instrucciones del programa en orden
         for (manbelParser.InstruccionContext instr : ctx.instruccion()) {
             visit(instr);
         }
@@ -26,7 +28,7 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
     @Override
     public Object visitInstruccion(InstruccionContext ctx) {
         String tipoInstruccion = getTipoInstruccion(ctx);
-    
+
         if (ctx.declaracion() != null) {
             return visit(ctx.declaracion());
         } else if (ctx.asig() != null) {
@@ -49,29 +51,32 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
 
     // ========== DECLARACIONES Y ASIGNACIONES ==========
 
+    /**
+     * Maneja la declaración de variables con tipado dinámico.
+     * Convierte los valores al tipo especificado y los almacena en la tabla de
+     * símbolos.
+     */
     @Override
     public Object visitDeclaracion(manbelParser.DeclaracionContext ctx) {
-        String tipo = ctx.TIPO().getText();
+        String tipo = ctx.TIPO().getText(); // "enterito", "pedacito", etc.
         String id = ctx.ID().getText();
         Object valor = (ctx.expr() != null) ? visit(ctx.expr()) : getValorPorDefecto(tipo);
-        valor = convertirTipo(valor, tipo);
+        valor = convertirTipo(valor, tipo); // Conversión de tipos
         tablaSimbolos.put(id, valor);
-
         return valor;
     }
-
 
     @Override
     public Object visitMostrar(manbelParser.MostrarContext ctx) {
         Object valor = visit(ctx.expr());
-        
+
         if (valor instanceof Boolean) {
             String output = (Boolean) valor ? "neta" : "falacia";
             System.out.println(output);
         } else {
             System.out.println(valor.toString());
         }
-        
+
         return null;
     }
 
@@ -94,54 +99,58 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
 
     // ========== EXPRESIONES MATEMÁTICAS ==========
 
-// Manejo de expresiones aritméticas (suma/resta)
-@Override
-public Object visitExpresionAritmetica(manbelParser.ExpresionAritmeticaContext ctx) {
-    Object resultado = visit(ctx.termino(0));
+    // Manejo de expresiones aritméticas (suma/resta)
+    @Override
+    public Object visitExpresionAritmetica(manbelParser.ExpresionAritmeticaContext ctx) {
+        Object resultado = visit(ctx.termino(0));
 
-    for (int i = 1; i < ctx.termino().size(); i++) {
-        String operador = ctx.op.getText(); 
-        Object termino = visit(ctx.termino(i));
+        for (int i = 1; i < ctx.termino().size(); i++) {
+            String operador = ctx.op.getText();
+            Object termino = visit(ctx.termino(i));
 
-        switch (operador) {
-            case "+":
-                resultado = sumar(resultado, termino);
-                break;
-            case "-":
-                resultado = restar(resultado, termino);
-                break;
+            switch (operador) {
+                case "+":
+                    resultado = sumar(resultado, termino);
+                    break;
+                case "-":
+                    resultado = restar(resultado, termino);
+                    break;
+            }
         }
+        return resultado;
     }
-    return resultado;
-}
 
-// Manejo de comparaciones (>, <, ==, etc.)
-@Override
-public Object visitExpresionComparacion(manbelParser.ExpresionComparacionContext ctx) {
-    Object izquierda = visit(ctx.expr(0));
-    Object derecha = visit(ctx.expr(1));
-    String operador = ctx.op.getText();
-    
-    if (operador.matches("[<>]=?")) {
-        double numIzq = convertToNumber(izquierda);
-        double numDer = convertToNumber(derecha);
-        switch (operador) {
-            case ">":  return numIzq > numDer;
-            case "<":  return numIzq < numDer;
-            case ">=": return numIzq >= numDer;
-            case "<=": return numIzq <= numDer;
+    // Manejo de comparaciones (>, <, ==, etc.)
+    @Override
+    public Object visitExpresionComparacion(manbelParser.ExpresionComparacionContext ctx) {
+        Object izquierda = visit(ctx.expr(0));
+        Object derecha = visit(ctx.expr(1));
+        String operador = ctx.op.getText();
+
+        if (operador.matches("[<>]=?")) {
+            double numIzq = convertToNumber(izquierda);
+            double numDer = convertToNumber(derecha);
+            switch (operador) {
+                case ">":
+                    return numIzq > numDer;
+                case "<":
+                    return numIzq < numDer;
+                case ">=":
+                    return numIzq >= numDer;
+                case "<=":
+                    return numIzq <= numDer;
+            }
+        } else if (operador.equals("==")) {
+            return Objects.equals(izquierda, derecha);
         }
-    } else if (operador.equals("==")) {
-        return Objects.equals(izquierda, derecha);
-    }
-    
-    throw new RuntimeException("Operador no manejado: " + operador);
-}
 
-@Override
-public Object visitExpresionIncremento(manbelParser.ExpresionIncrementoContext ctx) {
-    return visit(ctx.incremento()); 
-}
+        throw new RuntimeException("Operador no manejado: " + operador);
+    }
+
+    @Override
+    public Object visitExpresionIncremento(manbelParser.ExpresionIncrementoContext ctx) {
+        return visit(ctx.incremento());
+    }
 
     @Override
     public Object visitTermino(manbelParser.TerminoContext ctx) {
@@ -166,36 +175,36 @@ public Object visitExpresionIncremento(manbelParser.ExpresionIncrementoContext c
 
     // ========== ESTRUCTURAS DE CONTROL ==========
 
-@Override
-public Object visitDef(manbelParser.DefContext ctx) {
-    boolean condicionCheca = (Boolean) visit(ctx.condicion());
+    @Override
+    public Object visitDef(manbelParser.DefContext ctx) {
+        boolean condicionCheca = (Boolean) visit(ctx.condicion());
 
-    if (condicionCheca) {
-        ctx.instruccion().forEach(this::visit);
-    } else {
-        boolean algunSinoChecaEjecutado = false;
-        for (manbelParser.Else_ifContext elseIfCtx : ctx.else_if()) {
-            boolean condicionSinoCheca = (Boolean) visit(elseIfCtx.condicion());
+        if (condicionCheca) {
+            ctx.instruccion().forEach(this::visit);
+        } else {
+            boolean algunSinoChecaEjecutado = false;
+            for (manbelParser.Else_ifContext elseIfCtx : ctx.else_if()) {
+                boolean condicionSinoCheca = (Boolean) visit(elseIfCtx.condicion());
 
-            if (condicionSinoCheca && !algunSinoChecaEjecutado) {
-                elseIfCtx.instruccion().forEach(this::visit);
-                algunSinoChecaEjecutado = true;
+                if (condicionSinoCheca && !algunSinoChecaEjecutado) {
+                    elseIfCtx.instruccion().forEach(this::visit);
+                    algunSinoChecaEjecutado = true;
+                }
+            }
+
+            if (!algunSinoChecaEjecutado && ctx.else_block() != null) {
+                ctx.else_block().instruccion().forEach(this::visit);
             }
         }
-
-        if (!algunSinoChecaEjecutado && ctx.else_block() != null) {
-            ctx.else_block().instruccion().forEach(this::visit);
-        }
+        return null;
     }
-    return null;
-}
 
     @Override
     public Object visitCondicion(manbelParser.CondicionContext ctx) {
-       
+
         Object izquierda = visit(ctx.expr(0));
         Object derecha = visit(ctx.expr(1));
-    
+
         String operador;
         if (ctx.MAYOR() != null) {
             operador = ">";
@@ -211,31 +220,35 @@ public Object visitDef(manbelParser.DefContext ctx) {
             logError("Operador de comparación no reconocido");
             throw new RuntimeException("Operador de comparación no reconocido");
         }
-    
+
         if (operador.matches("[<>]=?")) {
             try {
                 double numIzq = convertToNumber(izquierda);
                 double numDer = convertToNumber(derecha);
-    
+
                 switch (operador) {
-                    case ">":  return numIzq > numDer;
-                    case "<":  return numIzq < numDer;
-                    case ">=": return numIzq >= numDer;
-                    case "<=": return numIzq <= numDer;
+                    case ">":
+                        return numIzq > numDer;
+                    case "<":
+                        return numIzq < numDer;
+                    case ">=":
+                        return numIzq >= numDer;
+                    case "<=":
+                        return numIzq <= numDer;
                 }
             } catch (RuntimeException e) {
                 logError("Error en comparación numérica: " + e.getMessage());
                 throw e;
             }
         }
-    
+
         if (operador.equals("==")) {
             if (izquierda instanceof Number && derecha instanceof Number) {
                 return ((Number) izquierda).doubleValue() == ((Number) derecha).doubleValue();
             }
             return Objects.equals(izquierda, derecha);
         }
-    
+
         throw new RuntimeException("Operador no manejado: " + operador);
     }
 
@@ -276,39 +289,39 @@ public Object visitDef(manbelParser.DefContext ctx) {
         }
     }
 
-    // ========== MÉTODOS AUXILIARES ==========
-
+    /**
+     * Implementación del ciclo 'floop' (for/while combinado).
+     * Maneja tanto la sintaxis estilo for como while.
+     */
     @Override
     public Object visitFloop(FloopContext ctx) {
         try {
+            // Parte de inicialización (si existe)
             if (ctx.declaracion() != null) {
                 visit(ctx.declaracion());
             } else if (!ctx.asig().isEmpty()) {
                 visit(ctx.asig(0));
             }
-    
+
             while (true) {
+                // Evaluar condición de parada (si existe)
                 if (ctx.condicion() != null) {
                     Object cond = visit(ctx.condicion());
-                    if (!(cond instanceof Boolean)) {
-                        logError("La condición debe ser booleana");
-                        throw new RuntimeException("La condición debe ser booleana");
-                    }
                     if (!(Boolean) cond) {
-                        break; 
+                        break;
                     }
                 }
-    
-                // 2.2 Ejecutar cuerpo del foopi
+
+                // Ejecutar cuerpo del ciclo
                 for (InstruccionContext instr : ctx.instruccion()) {
                     visit(instr);
                 }
-    
-                // 2.3 Paso de actualización (¡Clave aquí!)
+
+                // Paso de actualización (si existe)
                 if (!ctx.asig().isEmpty()) {
-                    visit(ctx.asig(ctx.asig().size() - 1)); 
+                    visit(ctx.asig(ctx.asig().size() - 1));
                 } else if (ctx.incremento() != null) {
-                    visit(ctx.incremento()); 
+                    visit(ctx.incremento());
                 }
             }
         } catch (Exception e) {
@@ -318,16 +331,21 @@ public Object visitDef(manbelParser.DefContext ctx) {
         return null;
     }
 
+    // ========== MÉTODOS AUXILIARES ==========
+
+    /**
+     * Convierte un valor al tipo especificado (enterito, pedacito, etc.)
+     */
     private Object convertirTipo(Object valor, String tipo) {
         try {
             switch (tipo) {
-                case "enterito":     
+                case "enterito":
                     return ((Number) valor).intValue();
-                case "pedacito":   
+                case "pedacito":
                     return ((Number) valor).doubleValue();
-                case "bolas":       
+                case "bolas":
                     return Boolean.parseBoolean(valor.toString());
-                case "texto":       
+                case "texto":
                     return valor.toString();
                 default:
                     return valor;
@@ -336,6 +354,7 @@ public Object visitDef(manbelParser.DefContext ctx) {
             throw new RuntimeException("Error de conversion: " + e.getMessage());
         }
     }
+
     private Object getValorPorDefecto(String tipo) {
         switch (tipo) {
             case "enterito":
@@ -343,7 +362,7 @@ public Object visitDef(manbelParser.DefContext ctx) {
             case "pedacito":
                 return 0.0;
             case "bolas":
-                return false; 
+                return false;
             case "texto":
                 return "";
             default:
@@ -354,7 +373,6 @@ public Object visitDef(manbelParser.DefContext ctx) {
     private void logError(String mensaje) {
         System.err.println("[ERROR] " + mensaje);
     }
-
 
     private Object sumar(Object a, Object b) {
         if (a instanceof String || b instanceof String) {
@@ -375,7 +393,7 @@ public Object visitDef(manbelParser.DefContext ctx) {
         try {
             double divisor = ((Number) b).doubleValue();
             if (divisor == 0) {
-                throw new ArithmeticException("Division por cero no permitida"); 
+                throw new ArithmeticException("Division por cero no permitida");
             }
             return ((Number) a).doubleValue() / divisor;
         } catch (ArithmeticException e) {
@@ -384,16 +402,23 @@ public Object visitDef(manbelParser.DefContext ctx) {
         }
     }
 
-private String getTipoInstruccion(InstruccionContext ctx) {
-    if (ctx.declaracion() != null) return "Declaracion";
-    if (ctx.asig() != null) return "Asignacion";
-    if (ctx.incremento() != null) return "Incremento";
-    if (ctx.expr() != null) return "Expresion";
-    if (ctx.def() != null) return "Checa-Sino";  
-    if (ctx.floop() != null) return "Foopi";     
-    if (ctx.mostrar() != null) return "Mostrar";
-    return "Instruccion desconocida";
-}
+    private String getTipoInstruccion(InstruccionContext ctx) {
+        if (ctx.declaracion() != null)
+            return "Declaracion";
+        if (ctx.asig() != null)
+            return "Asignacion";
+        if (ctx.incremento() != null)
+            return "Incremento";
+        if (ctx.expr() != null)
+            return "Expresion";
+        if (ctx.def() != null)
+            return "Checa-Sino";
+        if (ctx.floop() != null)
+            return "Foopi";
+        if (ctx.mostrar() != null)
+            return "Mostrar";
+        return "Instruccion desconocida";
+    }
 
     private Object convertirValor(Object nuevoValor, Object valorOriginal) {
         if (valorOriginal instanceof Integer) {

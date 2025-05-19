@@ -1,6 +1,5 @@
 package com.nuestrolenguaje.traductores;
 
-
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,26 +15,35 @@ import com.nuestrolenguaje.manbelBaseVisitor;
 import com.nuestrolenguaje.manbelLexer;
 import com.nuestrolenguaje.manbelParser;
 
+/**
+ * Visitor para traducir código Manbel a Python.
+ * Genera código Python con indentación adecuada.
+ */
 public class TraductorPyVisitor extends manbelBaseVisitor<String> {
-    private int indentLevel = 0;
-    private final Map<String, String> symbolTable = new HashMap<>();
+    private int indentLevel = 0; // Control de indentación para bloques
+    private final Map<String, String> symbolTable = new HashMap<>(); // Tabla de símbolos para verificación de tipos
 
+    /**
+     * Método principal de traducción.
+     * Convierte una cadena de código Manbel a su equivalente en Python.
+     */
     public String translate(String inputCode) {
         try {
+            // Pipeline de ANTLR: Lexer → Parser → Visitor
             CharStream input = CharStreams.fromString(inputCode);
             manbelLexer lexer = new manbelLexer(input);
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             manbelParser parser = new manbelParser(tokens);
-            
+
+            // Configurar manejo de errores
             parser.removeErrorListeners();
             parser.addErrorListener(new BaseErrorListener() {
                 public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
-                                    int line, int charPositionInLine,
-                                    String msg, RecognitionException e) {
+                        int line, int charPositionInLine, String msg, RecognitionException e) {
                     throw new RuntimeException("Error en línea " + line + ":" + charPositionInLine + " - " + msg);
                 }
             });
-            
+
             ParseTree tree = parser.programa();
             return visitPrograma((manbelParser.ProgramaContext) tree);
         } catch (Exception e) {
@@ -46,7 +54,7 @@ public class TraductorPyVisitor extends manbelBaseVisitor<String> {
     @Override
     public String visitPrograma(manbelParser.ProgramaContext ctx) {
         StringBuilder pyCode = new StringBuilder();
-        
+
         if (ctx.instruccion() != null) {
             for (manbelParser.InstruccionContext instr : ctx.instruccion()) {
                 String translated = visit(instr);
@@ -64,7 +72,8 @@ public class TraductorPyVisitor extends manbelBaseVisitor<String> {
 
     @Override
     public String visitDeclaracion(manbelParser.DeclaracionContext ctx) {
-        if (ctx.TIPO() == null || ctx.ID() == null) return "";
+        if (ctx.TIPO() == null || ctx.ID() == null)
+            return "";
         String tipo = ctx.TIPO().getText();
         String nombre = ctx.ID().getText();
         String valor = ctx.expr() != null ? visit(ctx.expr()) : getDefaultValue(tipo);
@@ -87,7 +96,7 @@ public class TraductorPyVisitor extends manbelBaseVisitor<String> {
     @Override
     public String visitFloop(manbelParser.FloopContext ctx) {
         StringBuilder pyCode = new StringBuilder();
-        
+
         // Manejo de foopi con inicialización, condición y actualización
         if (ctx.declaracion() != null || !ctx.asig().isEmpty()) {
             String init = ctx.declaracion() != null ? visit(ctx.declaracion()) : visit(ctx.asig(0));
@@ -108,7 +117,7 @@ public class TraductorPyVisitor extends manbelBaseVisitor<String> {
             }
 
             pyCode.append("for ").append(varName).append(" in range(")
-                  .append(startVal).append(", ").append(endVal).append(", ").append(step).append("):\n");
+                    .append(startVal).append(", ").append(endVal).append(", ").append(step).append("):\n");
         } else {
             // Si no hay inicialización/cláusula, usamos while
             String condition = ctx.condicion() != null ? visit(ctx.condicion()) : "True";
@@ -125,14 +134,18 @@ public class TraductorPyVisitor extends manbelBaseVisitor<String> {
         return pyCode.toString();
     }
 
+    /**
+     * Maneja la estructura condicional 'def' (if/elif/else).
+     * Genera la sintaxis Python con indentación correcta.
+     */
     @Override
     public String visitDef(manbelParser.DefContext ctx) {
         StringBuilder pyCode = new StringBuilder();
-        
+
         // Manejar if principal
         pyCode.append("if ").append(visit(ctx.condicion())).append(":\n");
         indentLevel++;
-        
+
         for (manbelParser.InstruccionContext instr : ctx.instruccion()) {
             String translated = visit(instr);
             if (!translated.trim().isEmpty()) {
@@ -148,7 +161,7 @@ public class TraductorPyVisitor extends manbelBaseVisitor<String> {
         // Manejar elif (sino checa)
         for (manbelParser.Else_ifContext elifCtx : ctx.else_if()) {
             pyCode.append("    ".repeat(indentLevel)) // Indentación base para elif
-                .append("elif ").append(visit(elifCtx.condicion())).append(":\n");
+                    .append("elif ").append(visit(elifCtx.condicion())).append(":\n");
             indentLevel++;
             for (manbelParser.InstruccionContext instr : elifCtx.instruccion()) {
                 String translated = visit(instr);
@@ -226,7 +239,7 @@ public class TraductorPyVisitor extends manbelBaseVisitor<String> {
         String izquierda = visit(ctx.expr(0));
         String derecha = visit(ctx.expr(1));
         String operador = ctx.op.getText();
-        
+
         return izquierda + " " + operador + " " + derecha;
     }
 
@@ -234,13 +247,18 @@ public class TraductorPyVisitor extends manbelBaseVisitor<String> {
     public String visitCondicion(manbelParser.CondicionContext ctx) {
         String izquierda = visit(ctx.expr(0));
         String derecha = visit(ctx.expr(1));
-        
-        if (ctx.MAYOR() != null) return izquierda + " > " + derecha;
-        if (ctx.MENOR() != null) return izquierda + " < " + derecha;
-        if (ctx.MAYOR_EQ() != null) return izquierda + " >= " + derecha;
-        if (ctx.MENOR_EQ() != null) return izquierda + " <= " + derecha;
-        if (ctx.IGUAL() != null) return izquierda + " == " + derecha;
-        
+
+        if (ctx.MAYOR() != null)
+            return izquierda + " > " + derecha;
+        if (ctx.MENOR() != null)
+            return izquierda + " < " + derecha;
+        if (ctx.MAYOR_EQ() != null)
+            return izquierda + " >= " + derecha;
+        if (ctx.MENOR_EQ() != null)
+            return izquierda + " <= " + derecha;
+        if (ctx.IGUAL() != null)
+            return izquierda + " == " + derecha;
+
         throw new RuntimeException("Operador de comparación no reconocido");
     }
 
@@ -272,12 +290,17 @@ public class TraductorPyVisitor extends manbelBaseVisitor<String> {
     }
 
     private String getDefaultValue(String tipo) {
-        switch(tipo) {
-            case "enterito": return "0";
-            case "pedacito": return "0.0";
-            case "texto":    return "\"\"";
-            case "bolas":    return "False";
-            default:         return "None";
+        switch (tipo) {
+            case "enterito":
+                return "0";
+            case "pedacito":
+                return "0.0";
+            case "texto":
+                return "\"\"";
+            case "bolas":
+                return "False";
+            default:
+                return "None";
         }
     }
 }
