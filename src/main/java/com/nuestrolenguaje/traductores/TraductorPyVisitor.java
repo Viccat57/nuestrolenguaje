@@ -1,4 +1,5 @@
-package com.nuestrolenguaje;
+package com.nuestrolenguaje.traductores;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,6 +11,10 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.tree.ParseTree;
+
+import com.nuestrolenguaje.manbelBaseVisitor;
+import com.nuestrolenguaje.manbelLexer;
+import com.nuestrolenguaje.manbelParser;
 
 public class TraductorPyVisitor extends manbelBaseVisitor<String> {
     private int indentLevel = 0;
@@ -32,7 +37,7 @@ public class TraductorPyVisitor extends manbelBaseVisitor<String> {
             });
             
             ParseTree tree = parser.programa();
-            return visit(tree);
+            return visitPrograma((manbelParser.ProgramaContext) tree);
         } catch (Exception e) {
             throw new RuntimeException("Error al traducir: " + e.getMessage());
         }

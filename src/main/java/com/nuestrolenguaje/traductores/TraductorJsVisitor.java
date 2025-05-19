@@ -1,6 +1,8 @@
-package com.nuestrolenguaje;
+package com.nuestrolenguaje.traductores;
 
-import com.nuestrolenguaje.manbelParser.*;
+import com.nuestrolenguaje.manbelBaseVisitor;
+import com.nuestrolenguaje.manbelParser;
+import com.nuestrolenguaje.manbelParser.InstruccionContext;
 
 public class TraductorJsVisitor extends manbelBaseVisitor<String> {
 
@@ -8,7 +10,7 @@ public class TraductorJsVisitor extends manbelBaseVisitor<String> {
     public String visitPrograma(manbelParser.ProgramaContext ctx) {
         StringBuilder jsCode = new StringBuilder();
         for (manbelParser.InstruccionContext instr : ctx.instruccion()) {
-            String translated = visit(instr);
+            String translated = visitInstruccion(instr);
             if (translated != null) {
                 jsCode.append(translated).append("\n");
             }

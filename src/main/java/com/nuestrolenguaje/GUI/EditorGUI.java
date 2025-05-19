@@ -1,4 +1,10 @@
-package com.nuestrolenguaje;
+package com.nuestrolenguaje.GUI;
+
+import com.nuestrolenguaje.traductores.TraductorJsVisitor;
+import com.nuestrolenguaje.traductores.TraductorPyVisitor;
+import com.nuestrolenguaje.manbelLexer;
+import com.nuestrolenguaje.manbelParser;
+import com.nuestrolenguaje.manbelCustomVisitor;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -8,6 +14,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -39,6 +46,7 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
+
 
 
 public class EditorGUI extends JFrame {
@@ -360,7 +368,7 @@ private void loadManbelFile(ActionEvent e) {
     FileNameExtensionFilter filter = new FileNameExtensionFilter(
         "Archivos Manbel (*.manbel)", "manbel");
     fileChooser.setFileFilter(filter);
-    fileChooser.setCurrentDirectory(new File(Main.DIRBASE));
+    fileChooser.setCurrentDirectory(new File("src/test/resources/"));
     
     int result = fileChooser.showOpenDialog(this);
     
