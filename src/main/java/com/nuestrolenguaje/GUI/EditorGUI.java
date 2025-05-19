@@ -107,7 +107,7 @@ public class EditorGUI extends JFrame {
 
         // Botón para cambiar tema
         JButton themeBtn = createStyledButton("Cambiar tema", new Color(128, 0, 128), "tema.png");
-        themeBtn.addActionListener(e -> {
+        themeBtn.addActionListener(_ -> {
             darkMode = !darkMode;
             applyTheme();
         });
