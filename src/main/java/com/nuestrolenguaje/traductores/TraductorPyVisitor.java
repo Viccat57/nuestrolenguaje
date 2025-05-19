@@ -128,38 +128,46 @@ public class TraductorPyVisitor extends manbelBaseVisitor<String> {
     @Override
     public String visitDef(manbelParser.DefContext ctx) {
         StringBuilder pyCode = new StringBuilder();
-        pyCode.append("if ").append(visit(ctx.condicion())).append(":\n");
         
+        // Manejar if principal
+        pyCode.append("if ").append(visit(ctx.condicion())).append(":\n");
         indentLevel++;
+        
         for (manbelParser.InstruccionContext instr : ctx.instruccion()) {
-            pyCode.append("    ".repeat(indentLevel)).append(visit(instr)).append("\n");
-            if (!instr.getText().endsWith("}") && !instr.getText().endsWith(";")) {
-                pyCode.append("\n");
+            String translated = visit(instr);
+            if (!translated.trim().isEmpty()) {
+                pyCode.append("    ".repeat(indentLevel)).append(translated);
+                // Solo agregar salto de línea si no termina con uno
+                if (!translated.endsWith("\n")) {
+                    pyCode.append("\n");
+                }
             }
         }
         indentLevel--;
 
-        // Else-if (sino checa)
+        // Manejar elif (sino checa)
         for (manbelParser.Else_ifContext elifCtx : ctx.else_if()) {
             pyCode.append("    ".repeat(indentLevel)) // Indentación base para elif
                 .append("elif ").append(visit(elifCtx.condicion())).append(":\n");
             indentLevel++;
             for (manbelParser.InstruccionContext instr : elifCtx.instruccion()) {
-                pyCode.append("    ".repeat(indentLevel)).append(visit(instr));
-                if (!instr.getText().endsWith("}") && !instr.getText().endsWith(";")) {
+                String translated = visit(instr);
+                pyCode.append("    ".repeat(indentLevel)).append(translated);
+                if (!translated.endsWith("\n")) {
                     pyCode.append("\n");
                 }
             }
             indentLevel--;
         }
 
-        // Else (sino)
+        // Manejar else (sino)
         if (ctx.else_block() != null) {
-            pyCode.append("    ".repeat(indentLevel)).append("else:\n"); // Indentación base para else
+            pyCode.append("    ".repeat(indentLevel)).append("else:\n");
             indentLevel++;
             for (manbelParser.InstruccionContext instr : ctx.else_block().instruccion()) {
-                pyCode.append("    ".repeat(indentLevel)).append(visit(instr));
-                if (!instr.getText().endsWith("}") && !instr.getText().endsWith(";")) {
+                String translated = visit(instr);
+                pyCode.append("    ".repeat(indentLevel)).append(translated);
+                if (!translated.endsWith("\n")) {
                     pyCode.append("\n");
                 }
             }
