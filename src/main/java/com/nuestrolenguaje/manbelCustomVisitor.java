@@ -27,7 +27,6 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
 
     @Override
     public Object visitInstruccion(InstruccionContext ctx) {
-        String tipoInstruccion = getTipoInstruccion(ctx);
 
         if (ctx.declaracion() != null) {
             return visit(ctx.declaracion());
@@ -402,23 +401,6 @@ public class manbelCustomVisitor extends manbelBaseVisitor<Object> {
         }
     }
 
-    private String getTipoInstruccion(InstruccionContext ctx) {
-        if (ctx.declaracion() != null)
-            return "Declaracion";
-        if (ctx.asig() != null)
-            return "Asignacion";
-        if (ctx.incremento() != null)
-            return "Incremento";
-        if (ctx.expr() != null)
-            return "Expresion";
-        if (ctx.def() != null)
-            return "Checa-Sino";
-        if (ctx.floop() != null)
-            return "Foopi";
-        if (ctx.mostrar() != null)
-            return "Mostrar";
-        return "Instruccion desconocida";
-    }
 
     private Object convertirValor(Object nuevoValor, Object valorOriginal) {
         if (valorOriginal instanceof Integer) {
